@@ -1,15 +1,24 @@
 import torch
-from basic_autoencoder import AutoEncoder
 from data_managment import get_dataloaders
 from matplotlib import pyplot as plt
+import argparse
+
+from basic_autoencoder import AutoEncoder
+
 
 def main():
     ''' main '''
-    batch_size = 2
+    parser = argparse.ArgumentParser("Configure Testing of Auto Encoder")
+    parser.add_argument('-i', '--input', type=str, help="Name of File Containing the Model State")
+    parser.add_argument('-bs', '--batchsize', type=int, default=1, help="Batch Size for Testing")
+    args = parser.parse_args()
+
+    model_path = args.input
+    batch_size = args.batchsize
     _, test_loader = get_dataloaders(batch_size, batch_size)
 
     autoencoder = AutoEncoder(28*28, 512, 256, 128)
-    autoencoder.load_state_dict(torch.load('./autoencoder'))
+    autoencoder.load_state_dict(torch.load(model_path))
 
     with torch.no_grad():
         batch, _ = next(iter(test_loader))
