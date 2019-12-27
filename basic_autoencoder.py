@@ -12,41 +12,45 @@ import os
 
 from data_managment import get_dataloaders
 
-SEED = 8675309
-torch.random.manual_seed(SEED)
-
 class AutoEncoder(nn.Module):
     '''
         A basic autoencoder
         input -> hidden -> bottleneck -> hidden -> output
     '''
-    def __init__(self, input_size, h1_size, h2_size, bottleneck_size):
+    def __init__(self, layers):
         super(AutoEncoder, self).__init__()
-        self.h1e = nn.Linear(input_size, h1_size)
-        self.h2e = nn.Linear(h1_size, h2_size)
-        self.enc = nn.Linear(h2_size, bottleneck_size)
-        self.h2d = nn.Linear(bottleneck_size, h2_size)
-        self.h1d = nn.Linear(h2_size, h1_size)
-        self.out = nn.Linear(h1_size, input_size)
+        self.input_size = layers[0]
+        self.bottleneck_size = layers[-1]
 
+        left = layers[:-1]
+        right = layers[1:]
+        encoding_layers = [nn.Linear(l, r) for l, r in zip(left, right)]
+        self.bottleneck_layer = encoding_layers.pop()
+        self.encoding_layers = nn.ModuleList(encoding_layers)
+
+        left, right = right[::-1], left[::-1]
+        decoding_layers = [nn.Linear(l, r) for l, r in zip(left, right)]
+        self.output_layer = decoding_layers.pop()
+        self.decoding_layers = nn.ModuleList(decoding_layers)
 
     def encode(self, original):
         '''
             Encode x to bottleneck
         '''
-        encoding = original.view(-1, 1, 28*28)
-        encoding = F.elu(self.h1e(encoding))
-        encoding = F.elu(self.h2e(encoding))
-        encoding = self.enc(encoding)
+        encoding = original.view(-1, 1, self.input_size)
+        for layer in self.encoding_layers:
+            encoding = F.relu(layer(encoding))
+        encoding = self.bottleneck_layer(encoding)
         return encoding
 
     def decode(self, encoding):
         '''
             Decode x back into the original data
         '''
-        reconstruction = F.elu(self.h2d(encoding))
-        reconstruction = F.elu(self.h1d(reconstruction))
-        reconstruction = torch.sigmoid(self.out(reconstruction))
+        reconstruction = encoding
+        for layer in self.decoding_layers:
+            reconstruction = F.elu(layer(reconstruction))
+        reconstruction = torch.sigmoid(self.output_layer(reconstruction))
         reconstruction = reconstruction.view(-1, 1, 28, 28)
         return reconstruction
 
@@ -61,6 +65,9 @@ class AutoEncoder(nn.Module):
 
     def load(self, path):
         self.load_state_dict(torch.load(path))
+
+class ConvAutoEncoder(nn.Module):
+    pass
 
 def train_epoch(model, optimizer, data_loader, epoch, log_interval=1):
     model.train()
@@ -107,10 +114,10 @@ def test_epoch(model, data_loader, epoch, log_interval=1):
         avg_loss = epoch_loss / len(data_loader)
         print(f"Verification: {num_items}/{dataset_size} ({percent_done:.2f}%) -- Loss={avg_loss}")
 
-def train_model(model, optimizer, n_epochs, train_loader, test_loader, path='./models', name='model'):
+def train_model(model, optimizer, n_epochs, train_loader, test_loader, verify=False, path='./models', name='model'):
     for epoch in range(n_epochs):
         train_epoch(model, optimizer, train_loader, epoch)
-        test_epoch(model, test_loader, epoch)
+        if verify: test_epoch(model, test_loader, epoch)
         model.save(f'{path}/{name}_{epoch}.state')
     model.save(f'{name}')
 
@@ -118,6 +125,7 @@ def main():
     parser = argparse.ArgumentParser(description="Configure Training of Auto Encoder")
     parser.add_argument('-e', '--epochs', type=int, help='Number of Epochs for Training')
     parser.add_argument('-bs', '--batchsize', type=int, help='Training Batch Size')
+    parser.add_argument('-v', '--verify', action='store_true', help='Run Verification Epochs')
     parser.add_argument('-p', '--trainingpath', type=str, default='./models', help='Directory for Saving State During Training')
     parser.add_argument('-o', '--output', type=str, help='Name for Output File(s)')
     parser.add_argument('-C', '--clean', action='store_true', help='Cleans out Training Data')
@@ -132,10 +140,10 @@ def main():
         os.makedirs(path)
 
     train_loader, test_loader = get_dataloaders(batch_size, batch_size)
-    autoencoder = AutoEncoder(28*28, 512, 256, 128)
+    autoencoder = AutoEncoder([28*28, 512, 256, 128])
     optimizer = optim.Adam(autoencoder.parameters(), lr=1e-3)
 
-    train_model(autoencoder, optimizer, num_epochs, train_loader, test_loader, path=path, name=output)
+    train_model(autoencoder, optimizer, num_epochs, train_loader, test_loader, verify=args.verify, path=path, name=output)
     if args.clean:
         from shutil import rmtree
         rmtree(path)
