@@ -3,7 +3,7 @@ from data_managment import get_dataloaders
 from matplotlib import pyplot as plt
 import argparse
 
-from basic_autoencoder import AutoEncoder
+from basic_autoencoder import AutoEncoder, ConvAutoEncoder
 
 def main():
     ''' main '''
@@ -20,13 +20,16 @@ def main():
     batch_size = args.batchsize
     _, test_loader = get_dataloaders(batch_size, batch_size)
 
-    autoencoder = AutoEncoder([28*28, 512, 256, 128])
+    autoencoder = AutoEncoder([28*28, 512, 256, 128, 64, 32])
     autoencoder.load_state_dict(torch.load(model_path))
-
+    convautoencoder = ConvAutoEncoder()
+    convautoencoder.load_state_dict(torch.load('./models/convautoencoder'))
+    
     with torch.no_grad():
         batch, _ = next(iter(test_loader))
         x = batch
         y = autoencoder(x)
+        y2 = convautoencoder(x)
 
         if batch_size > 1:
             figure, ax = plt.subplots(batch_size, 2)
@@ -52,7 +55,34 @@ def main():
 
         plt.tight_layout()
         plt.savefig(f'output/out.png')
-        plt.show()
+        plt.clf()
+        # plt.show()
+
+        if batch_size > 1:
+            figure, ax = plt.subplots(batch_size, 2)
+            for i, (orig, recon) in enumerate(zip(x,y2)):
+                ocm = ax[i, 0].imshow(orig.squeeze(), cmap='gray')
+                ax[i, 0].set_title("Original")
+
+                rcm = ax[i, 1].imshow(recon.squeeze(), cmap='gray')
+                ax[i, 1].set_title("Reconstruction")
+
+                figure.colorbar(ocm, ax=ax[i, 0], shrink=0.5)
+                figure.colorbar(rcm, ax=ax[i, 1], shrink=0.5)
+        elif batch_size == 1:
+            figure, ax = plt.subplots(batch_size, 2)
+            ocm = ax[0].imshow(x.squeeze(), cmap='gray')
+            ax[0].set_title("Original")
+
+            rcm = ax[1].imshow(y2.squeeze(), cmap='gray')
+            ax[1].set_title("Reconstruction")
+
+            figure.colorbar(ocm, ax=ax[0], shrink=0.5)
+            figure.colorbar(rcm, ax=ax[1], shrink=0.5)
+
+        plt.tight_layout()
+        plt.savefig(f'output/convout.png')
+        plt.clf()
 
 if __name__ == '__main__':
     main()
