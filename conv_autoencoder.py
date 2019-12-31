@@ -3,6 +3,7 @@
     author: Adam Good
     Description: A Convolutional Auto Encoder Example
 '''
+import time
 import argparse
 import os
 import torch
@@ -11,7 +12,7 @@ from torch.nn import functional as F
 import torch.optim as optim
 
 from data_managment import get_dataloaders
-from autoencoder_utils import train_model
+from autoencoder_utils import train_model, print_epoch
 
 class ConvAutoEncoder(nn.Module):
     '''
@@ -30,9 +31,6 @@ class ConvAutoEncoder(nn.Module):
         self.dc1 = nn.ConvTranspose2d(8, 16, kernel_size=3, stride=1, padding=1)
         self.dm2 = nn.Upsample(scale_factor=2, mode='nearest') #nn.MaxUnpool2d(kernel_size=2, stride=2)
         self.dc2 = nn.ConvTranspose2d(16, 1, kernel_size=5, stride=1, padding=2)
-        
-
-
 
     def encode(self, x):
         x = F.elu(self.ec1(x))
@@ -55,6 +53,38 @@ class ConvAutoEncoder(nn.Module):
     def forward(self, x):
         x = self.decode(self.encode(x))
         return x
+
+    def run_epoch(self, optimizer, loss_fn, data_loader, epoch, log_interval=1, training=True):
+        if training:
+            self.train()
+            epoch_type = "Training"
+        else:
+            self.eval()
+            epoch_type = "Validation"
+        
+        dataset_size = len(data_loader.dataset)
+        epoch_loss = 0.0
+        num_items = 0
+        batch_idx = 0
+        start = time.time()
+
+        for batch_idx, (data, _) in enumerate(data_loader):
+            if training:
+                optimizer.zero_grad()
+            output = self(data)
+            loss = loss_fn(data, output)
+            epoch_loss += loss.item()
+            num_items += len(data)
+            if training:
+                loss.backward()
+                optimizer.step()
+
+            if batch_idx % log_interval == 0:
+                elapsed_time = time.time() - start
+                print_epoch(epoch, epoch_loss, num_items, dataset_size, elapsed_time, epoch_type)
+
+        elapsed_time = time.time() - start
+        print_epoch(epoch, epoch_loss, num_items, dataset_size, elapsed_time, epoch_type, end='\n')
 
     def save(self, path):
         torch.save(self.state_dict(), path)
@@ -85,7 +115,7 @@ def main():
     autoencoder = ConvAutoEncoder()
     optimizer = optim.Adam(autoencoder.parameters(), lr=args.learningrate)
 
-    train_model(autoencoder, optimizer, num_epochs, train_loader, test_loader, verify=args.verify, trainingpath=path, name=output)
+    train_model(autoencoder, optimizer, F.mse_loss, num_epochs, train_loader, test_loader, verify=args.verify, trainingpath=path, name=output)
     if args.clean:
         from shutil import rmtree
         rmtree(path)

@@ -3,6 +3,7 @@
     Author: Adam Good
     Description: An example of an autoencoder on the MNIST dataset
 '''
+import time
 import argparse
 import os
 import torch
@@ -11,9 +12,9 @@ from torch.nn import functional as F
 import torch.optim as optim
 
 from data_managment import get_dataloaders
-from autoencoder_utils import train_model
+from autoencoder_utils import train_model, print_epoch
 
-SAE_LAYERS = [28*28, 512, 256, 128, 64, 32] 
+SAE_LAYERS = [28*28, 512, 2] 
 
 class SimpleAutoEncoder(nn.Module):
     '''
@@ -63,6 +64,38 @@ class SimpleAutoEncoder(nn.Module):
         '''
         return self.decode(self.encode(x))
 
+    def run_epoch(self, optimizer, loss_fn, data_loader, epoch, log_interval=1, training=True):
+        if training:
+            self.train()
+            epoch_type = "Training"
+        else:
+            self.eval()
+            epoch_type = "Validation"
+        
+        dataset_size = len(data_loader.dataset)
+        epoch_loss = 0.0
+        num_items = 0
+        batch_idx = 0
+        start = time.time()
+
+        for batch_idx, (data, _) in enumerate(data_loader):
+            if training:
+                optimizer.zero_grad()
+            output = self(data)
+            loss = loss_fn(data, output)
+            epoch_loss += loss.item()
+            num_items += len(data)
+            if training:
+                loss.backward()
+                optimizer.step()
+
+            if batch_idx % log_interval == 0:
+                elapsed_time = time.time() - start
+                print_epoch(epoch, epoch_loss, num_items, dataset_size, elapsed_time, epoch_type)
+
+        elapsed_time = time.time() - start
+        print_epoch(epoch, epoch_loss, num_items, dataset_size, elapsed_time, epoch_type, end='\n')
+
     def save(self, path):
         torch.save(self.state_dict(), path)
 
@@ -92,7 +125,7 @@ def main():
     autoencoder = SimpleAutoEncoder()
     optimizer = optim.Adam(autoencoder.parameters(), lr=args.learningrate)
 
-    train_model(autoencoder, optimizer, num_epochs, train_loader, test_loader, verify=args.verify, trainingpath=path, name=output)
+    train_model(autoencoder, optimizer, F.mse_loss, num_epochs, train_loader, test_loader, verify=args.verify, trainingpath=path, name=output)
     if args.clean:
         from shutil import rmtree
         rmtree(path)
