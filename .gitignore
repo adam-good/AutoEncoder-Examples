@@ -1,4 +1,5 @@
-# Data and Output
+#  My Environment
+.vscode/
 data/
 output/
 models/
