@@ -6,38 +6,43 @@ import torch
 import torch.nn
 from torch.nn import functional as F
 
-def _train_epoch(model, optimizer, data_loader, epoch, log_interval=1):
+def _print_epoch(epoch, loss, num_items, dataset_size, elapsed_time, epoch_type="Training", end='\r'):
+    percent = num_items / dataset_size * 100
+    avg_loss = loss / num_items
+    print(f'[{epoch:02}] {epoch_type:12} : {num_items:05}/{dataset_size} ({percent:6.2f}%) -- Loss={avg_loss:.2E} | {elapsed_time:.2f}s', end=end)
+    
+
+def _train_epoch(model, optimizer, loss_fn, data_loader, epoch, log_interval=1):
     model.train()
     dataset_size = len(data_loader.dataset)
     epoch_loss = 0.0
     num_items = 0
     batch_idx = 0
-
     start = time.time()
+
     for batch_idx, (data, _) in enumerate(data_loader):
         optimizer.zero_grad()
         output = model(data)
-        loss = F.mse_loss(output, data)
+        loss = loss_fn(output, data)
         epoch_loss += loss.item()
         num_items += len(data)
         loss.backward()
         optimizer.step()
 
         if batch_idx % log_interval == 0:
-            percent = (batch_idx+1) / len(data_loader) * 100
-            avg_loss = epoch_loss / (batch_idx + 1)
-            print(f"Epoch {epoch}: {num_items}/{dataset_size} ({percent:.2f}%) -- Loss={avg_loss} | {time.time() - start:.2f}s", end='\r')
+            _print_epoch(epoch, epoch_loss, num_items, dataset_size, time.time()-start)
 
-    percent = (batch_idx+1) / len(data_loader)*100
-    avg_loss = epoch_loss / len(data_loader)
-    print(f"Epoch {epoch}: {num_items}/{dataset_size} ({percent:.2f}%) -- Loss={avg_loss} | {time.time() - start:.2f}s")
+    _print_epoch(epoch, epoch_loss, num_items, dataset_size, time.time()-start, end='\n')
 
 def _test_epoch(model, data_loader, epoch, log_interval=1):
+    epoch_type = "Verification"
     with torch.no_grad():
         dataset_size = len(data_loader.dataset)
         epoch_loss = 0.0
         num_items = 0
         batch_idx = 0
+
+        start = time.time()
         for batch_idx, (data, _) in enumerate(data_loader):
             output = model(data)
             loss = F.mse_loss(output, data)
@@ -45,18 +50,16 @@ def _test_epoch(model, data_loader, epoch, log_interval=1):
             num_items += len(data)
 
             if batch_idx % log_interval == 0:
-                percent_done = (batch_idx+1)/len(data_loader)*100
-                avg_loss = epoch_loss / (batch_idx + 1)
-                print(f"[{epoch}]\tVerification: {num_items}/{dataset_size} ({percent_done:.2f}%) -- Loss={avg_loss}", end='\r')
+                elapsed_time = time.time() - start
+                _print_epoch(epoch, epoch_loss, num_items, dataset_size, elapsed_time, epoch_type="Verification")
 
-        percent_done = (batch_idx+1) / len(data_loader)*100
-        avg_loss = epoch_loss / len(data_loader)
-        print(f"[{epoch}]\tVerification: {num_items}/{dataset_size} ({percent_done:.2f}%) -- Loss={avg_loss}")
+        elapsed_time = time.time() - start
+        _print_epoch(epoch, epoch_loss, num_items, dataset_size, elapsed_time, epoch_type="Verification", end='\n')
 
-def train_model(model, optimizer, n_epochs, train_loader, test_loader, verify=False, trainingpath='./models', name='model'):
+def train_model(model, optimizer, loss_fn, n_epochs, train_loader, test_loader, verify=False, trainingpath='./models', name='model'):
     start = time.time()
     for epoch in range(n_epochs):
-        _train_epoch(model, optimizer, train_loader, epoch)
+        _train_epoch(model, optimizer, loss_fn, train_loader, epoch)
         if verify:
             _test_epoch(model, test_loader, epoch)
         model.save(f'{trainingpath}/{name}_{epoch}.state')
@@ -68,4 +71,4 @@ def train_model(model, optimizer, n_epochs, train_loader, test_loader, verify=Fa
     hours, remainder = divmod(elapsed_time, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    print(f"Training Complete: {hours}:{minutes}:{seconds}")
+    print(f"Training Complete: {hours:.0f}:{minutes:.0f}:{seconds:2.0f}")
