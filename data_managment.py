@@ -19,7 +19,7 @@ def get_dataloaders(train_batch_size, test_batch_size, transform=transforms.ToTe
         test_loader = DataLoader(
             datasets.MNIST('./data', train=False, transform=transform, download=True),
             batch_size=test_batch_size,
-            shuffle=True
+            shuffle=False
         )
 
         return train_loader, test_loader
