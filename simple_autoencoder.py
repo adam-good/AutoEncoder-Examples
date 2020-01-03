@@ -14,7 +14,7 @@ import torch.optim as optim
 from data_managment import get_dataloaders
 from autoencoder_utils import train_model, print_epoch
 
-SAE_LAYERS = [28*28, 512, 2] 
+SAE_LAYERS = [28*28, 512, 128, 32]
 
 class SimpleAutoEncoder(nn.Module):
     '''
@@ -41,7 +41,8 @@ class SimpleAutoEncoder(nn.Module):
         '''
             Encode x to bottleneck
         '''
-        encoding = original.view(-1, 1, self.input_size)
+        encoding = original
+        # encoding = original.view(-1, 1, self.input_size)
         for layer in self.encoding_layers:
             encoding = F.relu(layer(encoding))
         encoding = self.bottleneck_layer(encoding)
@@ -55,10 +56,10 @@ class SimpleAutoEncoder(nn.Module):
         for layer in self.decoding_layers:
             reconstruction = F.elu(layer(reconstruction))
         reconstruction = torch.sigmoid(self.output_layer(reconstruction))
-        reconstruction = reconstruction.view(-1, 1, 28, 28)
+        # reconstruction = reconstruction.view(-1, 1, 28, 28)
         return reconstruction
 
-    def forward(self, x):
+    def forward(self, x, *argv):
         '''
             Encode and reconstruct the input x
         '''
@@ -79,6 +80,7 @@ class SimpleAutoEncoder(nn.Module):
         start = time.time()
 
         for batch_idx, (data, _) in enumerate(data_loader):
+            data = data.view(-1, 1, self.input_size)
             if training:
                 optimizer.zero_grad()
             output = self(data)
@@ -125,7 +127,9 @@ def main():
     autoencoder = SimpleAutoEncoder()
     optimizer = optim.Adam(autoencoder.parameters(), lr=args.learningrate)
 
-    train_model(autoencoder, optimizer, F.mse_loss, num_epochs, train_loader, test_loader, verify=args.verify, trainingpath=path, name=output)
+    # loss_fn = lambda x,y: F.binary_cross_entropy(y, x, reduction='sum')
+    loss_fn = F.mse_loss
+    train_model(autoencoder, optimizer, loss_fn, num_epochs, train_loader, test_loader, verify=args.verify, trainingpath=path, name=output)
     if args.clean:
         from shutil import rmtree
         rmtree(path)

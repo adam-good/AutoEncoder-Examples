@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 
 from simple_autoencoder import SimpleAutoEncoder
 from conv_autoencoder import ConvAutoEncoder
+from vae import VAE
 
 def main():
     ''' main '''
@@ -28,6 +29,8 @@ def main():
         autoencoder = SimpleAutoEncoder()
     elif args.type == 'conv':
         autoencoder = ConvAutoEncoder()
+    elif args.type == 'vae':
+        autoencoder = VAE()
     else:
         autoencoder = SimpleAutoEncoder()
     autoencoder.load_state_dict(torch.load(model_path))
@@ -35,11 +38,14 @@ def main():
     with torch.no_grad():
         batch, _ = next(iter(test_loader))
         x = batch
-        y = autoencoder(x)
+        if args.type == 'simple' or args.type == 'vae':
+            y = autoencoder(x.view(-1, 1, 28*28), False).reshape(-1, 1, 28, 28)
+        elif args.type == 'conv':
+            y = autoencoder(x)
 
         if batch_size > 1:
             figure, ax = plt.subplots(batch_size, 2)
-            for i, (orig, recon) in enumerate(zip(x,y)):
+            for i, (orig, recon) in enumerate(zip(x, y)):
                 ocm = ax[i, 0].imshow(orig.squeeze(), cmap='gray')
                 ax[i, 0].set_title("Original")
 

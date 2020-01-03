@@ -50,8 +50,9 @@ class ConvAutoEncoder(nn.Module):
         x = torch.sigmoid(self.dc2(x))
         return x
 
-    def forward(self, x):
-        x = self.decode(self.encode(x))
+    def forward(self, x, *argv):
+        x = self.encode(x)
+        x = self.decode(x)
         return x
 
     def run_epoch(self, optimizer, loss_fn, data_loader, epoch, log_interval=1, training=True):

@@ -17,22 +17,25 @@ from autoencoder_utils import train_model, print_epoch
 
 INPUT_SIZE = 28*28
 H1_SIZE = 512
-BOTTLENECK_SIZE = 2
+H2_SIZE = 128
+BOTTLENECK_SIZE = 32
 
 class VAE(nn.Module):
     
     def __init__(self):
         super(VAE, self).__init__()
 
-        self.fc_in = nn.Linear(INPUT_SIZE, H1_SIZE)
-        self.mean_layer = nn.Linear(H1_SIZE, BOTTLENECK_SIZE)
-        self.logvar_layer = nn.Linear(H1_SIZE, BOTTLENECK_SIZE)
-        self.fc_out = nn.Linear(BOTTLENECK_SIZE, H1_SIZE)
+        self.eh1 = nn.Linear(INPUT_SIZE, H1_SIZE)
+        self.eh2 = nn.Linear(H1_SIZE, H2_SIZE)
+        self.mean_layer = nn.Linear(H2_SIZE, BOTTLENECK_SIZE)
+        self.logvar_layer = nn.Linear(H2_SIZE, BOTTLENECK_SIZE)
+        self.dh2 = nn.Linear(BOTTLENECK_SIZE, H2_SIZE)
+        self.dh1 = nn.Linear(H2_SIZE, H1_SIZE)
         self.output = nn.Linear(H1_SIZE, INPUT_SIZE)
 
     def encode(self, x):
-        x = x.view(-1, 1, INPUT_SIZE)
-        x = F.elu(self.fc_in(x))
+        x = F.elu(self.eh1(x))
+        x = F.elu(self.eh2(x))
         mean = self.mean_layer(x)
         logvar = self.logvar_layer(x)
         return mean, logvar
@@ -44,16 +47,19 @@ class VAE(nn.Module):
         return mean + epsilon * std
 
     def decode(self, z):
-        z = F.elu(self.fc_out(z))
+        z = F.elu(self.dh2(z))
+        z = F.elu(self.dh1(z))
         z = torch.sigmoid(self.output(z))
-        z = z.view(-1, 1, 28, 28)
         return z
 
-    def forward(self, x):
+    def forward(self, x, retArgs=True, *argv):
         mean, logvar = self.encode(x)
         z = self.sample(mean, logvar)
         y = self.decode(z)
-        return y, mean, logvar
+        if retArgs:
+            return y, mean, logvar
+        else:
+            return y
 
     def run_epoch(self, optimizer, loss_fn, data_loader, epoch, log_interval=1, training=True):
         if training:
@@ -72,6 +78,9 @@ class VAE(nn.Module):
         for batch_idx, (data, _) in enumerate(data_loader):
             if training:
                 optimizer.zero_grad()
+
+            data = data.reshape(-1, 1, INPUT_SIZE)
+
             output, mean, logvar = self(data)
             loss = loss_fn(data, output, mean, logvar)
             epoch_loss += loss.item()
@@ -95,9 +104,10 @@ class VAE(nn.Module):
 
 # Mean Squared Error + KL Divergence
 def vae_loss_fn(x, y, mean, logvar):
-    mse = F.mse_loss(x, y)
-    kld = -0.5 * torch.sum(1 + logvar - torch.pow(mean, 2) - torch.exp(logvar) )
-    return mse + kld
+    # mse = F.mse_loss(x, y)
+    bce = F.binary_cross_entropy(y, x, reduction='sum')
+    kld = -0.5 * torch.sum(1 + logvar - mean.pow(2) - logvar.exp() )
+    return bce + kld
 
 def main():
     parser = argparse.ArgumentParser(description="Configure Training of Auto Encoder")
