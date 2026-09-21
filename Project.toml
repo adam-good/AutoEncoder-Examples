@@ -1,0 +1,13 @@
+name = "AutoEncoder Examples"
+uuid = "ee8b1150-adcd-4cbc-894b-9a2b8e71f912"
+version = "0.0.0"
+
+
+[deps]
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+MLDatasets = "eb30cadb-4394-5ae3-aed4-317e484a6458"
+
+[[authors]]
+email = "adamgood@protonmail.com"
+family-names = "Good"
+given-names = "Adam"
