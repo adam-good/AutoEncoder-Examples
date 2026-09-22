@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "c76ef2b5177b55ecb32c062e3ba02a612afc5d2c"
+project_hash = "0a12d7185208086112d6c884e1b7f5ef60bc87c5"
 
 [[deps.ADTypes]]
 deps = ["PrecompileTools"]
@@ -83,7 +83,7 @@ version = "0.5.3"
     AtomsView = "ee286e10-dd2d-4ff2-afcb-0a3cd50c8041"
 
 [[deps."AutoEncoder Examples"]]
-deps = ["Flux", "MLDatasets", "Plots", "ProgressMeter"]
+deps = ["Flux", "MLDatasets", "Plots", "ProgressMeter", "UnicodePlots"]
 path = "."
 uuid = "ee8b1150-adcd-4cbc-894b-9a2b8e71f912"
 version = "0.0.0"
@@ -1022,6 +1022,12 @@ git-tree-sha1 = "0ee4497a4e80dbd29c058fcee6493f5219556f40"
 uuid = "dbb5928d-eab1-5f90-85c2-b9b0edb7c900"
 version = "0.4.3"
 
+[[deps.MarchingCubes]]
+deps = ["PrecompileTools", "StaticArrays"]
+git-tree-sha1 = "0e893025924b6becbae4109f8020ac0e12674b01"
+uuid = "299715c1-40a9-479a-aaf9-4a633d36f717"
+version = "0.1.11"
+
 [[deps.Markdown]]
 deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
@@ -1688,6 +1694,29 @@ deps = ["REPL"]
 git-tree-sha1 = "53915e50200959667e78a92a418594b428dffddf"
 uuid = "1cfade01-22cf-5700-b092-accc4b62d6e1"
 version = "0.4.1"
+
+[[deps.UnicodePlots]]
+deps = ["ColorSchemes", "ColorTypes", "Contour", "Crayons", "Dates", "LinearAlgebra", "MarchingCubes", "NaNMath", "PrecompileTools", "Printf", "SparseArrays", "StaticArrays", "StatsBase"]
+git-tree-sha1 = "7db362a7cc6f71697552b7b5b4a641fd57693693"
+uuid = "b8865327-cd53-5732-bb35-84acbb429228"
+version = "3.9.0"
+
+    [deps.UnicodePlots.extensions]
+    FreeTypeExt = ["FileIO", "FreeType"]
+    GeoInterfaceExt = "GeoInterface"
+    ImageInTerminalExt = "ImageInTerminal"
+    IntervalSetsExt = "IntervalSets"
+    TermExt = "Term"
+    UnitfulExt = "Unitful"
+
+    [deps.UnicodePlots.weakdeps]
+    FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+    FreeType = "b38be410-82b0-50bf-ab77-7b57e271db43"
+    GeoInterface = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
+    ImageInTerminal = "d8c32880-2388-543b-8c61-d9f865259254"
+    IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
+    Term = "22787eb5-b846-44ae-b979-8e399b8463ab"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.Unitful]]
 deps = ["Dates", "LinearAlgebra", "Random"]

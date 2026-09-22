@@ -1,8 +1,18 @@
 { pkgs ? import <nixpkgs> {}} :
 pkgs.mkShellNoCC {
     packages = with pkgs; [
-        python3
-        julia-bin
+        (pkgs.buildFHSEnv {
+            name = "julia-fhs";
+            targetPkgs = pkgs: with pkgs; [
+                julia-bin
+                qt5.qtbase
+                fontconfig
+                python3
+            ];
+         })
+#        python3
+#        julia-bin
+#        qt5.qtbase
     ];
 
     shellHook = ''
