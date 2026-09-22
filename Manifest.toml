@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "0a12d7185208086112d6c884e1b7f5ef60bc87c5"
+project_hash = "fea1635ac75ed5ebaf22886a0b1a8f84269cd03a"
 
 [[deps.ADTypes]]
 deps = ["PrecompileTools"]
@@ -83,7 +83,7 @@ version = "0.5.3"
     AtomsView = "ee286e10-dd2d-4ff2-afcb-0a3cd50c8041"
 
 [[deps."AutoEncoder Examples"]]
-deps = ["Flux", "MLDatasets", "Plots", "ProgressMeter", "UnicodePlots"]
+deps = ["Flux", "GR", "MLDatasets", "Plots", "ProgressMeter", "UnicodePlots"]
 path = "."
 uuid = "ee8b1150-adcd-4cbc-894b-9a2b8e71f912"
 version = "0.0.0"
