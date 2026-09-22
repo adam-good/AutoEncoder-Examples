@@ -1,18 +1,21 @@
-using Base: dataids
-
-
 using Flux
 using MLDatasets
 using Statistics
 using ProgressMeter
+using Plots
 
 function getData()
     data = rand(Float32, 2, 1000)
-    truth = [xor(col[1] > 0.5, col[2] > 0.5 for col in eachcol(data))]
+    classes = [xor(col[1] > 0.5, col[2] > 0.5) for col in eachcol(data)]
     return (
         data,
-        truth
+        classes
     )
+end
+
+function plotData(datapoints::Matrix, classes::Vector{Bool})
+    x,y = eachrow(datapoints) 
+    scatter(x,y, zcolor=classes)
 end
 
 function newModel()
@@ -22,3 +25,5 @@ function newModel()
         Dense(3 => 2)
     )
 end
+
+
