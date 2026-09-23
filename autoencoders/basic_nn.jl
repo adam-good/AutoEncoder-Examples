@@ -5,14 +5,38 @@ using MLUtils
 using ProgressMeter
 using Plots
 
-function getData(N=1000)
+xor2d(x::Number, y::Number)::Bool = xor(x > 0.5, y > 0.5)
+
+struct DataObservation
+    x::Float32
+    y::Float32
+    class::Bool
+end
+struct DataSample
+    N::Integer
+    features::Matrix{Float32}
+    classes::Vector{Bool}
+end
+length(x::DataSample) = x.N
+features(x::DataSample) = x.features
+classes(x::DataSample) = x.classes
+# TODO: These should error on overflow
+ith_feature(i::Integer, x::DataSample) = eachcol(x.features)[i] 
+ith_class(i::Integer, x::DataSample) = x.classes[i] 
+ith_observation(i::Integer, x::DataSample) = begin 
+    x,y = ith_feature(i,x)
+    DataObservation(x,y,ith_class(i,x))
+end
+
+function get_data(N::Integer=1000)::DataSample
     data = rand(Float32, 2, N)
-    classes = [xor(col[1] > 0.5, col[2] > 0.5) for col in eachcol(data)]
-    return (
-        data,
-        classes
+    DataSample(
+        N,
+        data, 
+        [xor2d(col[1], col[2]) for col in eachcol(data)]
     )
 end
+
 
 function plotData(datapoints::Matrix, classes::Vector{Bool})
     x, y = eachrow(datapoints)
@@ -49,7 +73,7 @@ function train!(model, dataloader, epochs)
     opt_state = Flux.setup(Optimisers.Adam(0.01), model)
     losses = []
     @showprogress for epoch in 1:epochs
-        for (x,y) in dataloader
+        for (x, y) in dataloader
             loss = update!(model, opt_state, x, y)
             push!(losses, loss)
         end
