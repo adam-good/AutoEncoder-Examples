@@ -37,10 +37,9 @@ function get_data(N::Integer=1000)::DataSample
     )
 end
 
-
-function plotData(datapoints::Matrix, classes::Vector{Bool})
-    x, y = eachrow(datapoints)
-    scatter(x, y, marker_z=classes,
+function plot_data(sample::DataSample)
+    x, y = eachrow(features(sample))
+    scatter(x, y, marker_z=classes(sample),
         xlims=(0, 1),
         ylims=(0, 1))
 end
