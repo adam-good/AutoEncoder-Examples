@@ -44,27 +44,30 @@ function plot_data(sample::DataSample)
         ylims=(0, 1))
 end
 
-function newModel()
-    return Chain(
+# TODO: Add some parameters as args so this is more flexible
+function new_model()
+    Chain(
         Dense(2 => 3, tanh),
         BatchNorm(3),
         Dense(3 => 2)
     )
 end
+probs(model, data) = model(data) |> softmax
+predict(probs) = probs |> eachcol .|> argmax
 
-function probs(model, data)
-    model(data) |> softmax
+struct ModelTrainer
+    model::Flux.Chain
+    opt_state::Optimisers
+end
+function new_trainer(model, opt)
+    ModelTrainer(model, Flux.setup(opt, model))
 end
 
-function predict(probs)
-    probs |> eachcol .|> argmax
-end
-
-function update!(model, opt, x, y)
-    loss, grads = Flux.withgradient(model) do m
+function update!(trainer, x, y)
+    loss, grads = Flux.withgradient(trainer.model) do m
         Losses.logitcrossentropy(m(x), y)
     end
-    Flux.update!(opt, model, grads[1])
+    Flux.update!(trainer.opt_state, trainer.model, grads[1])
     loss
 end
 
