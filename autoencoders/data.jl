@@ -1,7 +1,7 @@
 
 using Plots
 
-xor2d(x::Number, y::Number)::Bool = xor(x > 1.5, y > 0.5)
+xor2d(x::Number, y::Number)::Bool = xor(x > 0.5, y > 0.5)
 
 struct DataSample
     N::Integer
@@ -32,7 +32,7 @@ end
 
 function plot_data(features, classes)
     x, y = eachrow(features)
-    scatter(x, y, marker_z=classes,
+    scatter(x, y, group=classes,
         xlims=(0, 1),
         ylims=(0, 1))
 end
