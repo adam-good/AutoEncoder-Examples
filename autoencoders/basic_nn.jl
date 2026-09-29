@@ -15,13 +15,13 @@ end
 probs(model, data) = model(data) |> softmax
 predict(probs) = probs |> eachcol .|> argmax .|> x -> x - 1
 
-struct ModelTrainer
-    model       # TODO: What type should this be
-    opt_state   # TODO: What type should this be
+struct ModelTrainer{M, S}
+    model::M 
+    opt_state::S 
 end
-function new_trainer(model, opt)
-    ModelTrainer(model, Flux.setup(opt, model))
-end
+ModelTrainer(model::Flux.Chain, opt::Optimisers.AbstractRule) = ModelTrainer(model, Flux.setup(opt, model))
+model(trainer::ModelTrainer)::Flux.Chain = trainer.model
+
 
 function update!(trainer, x, y)
     loss, grads = Flux.withgradient(trainer.model) do m
