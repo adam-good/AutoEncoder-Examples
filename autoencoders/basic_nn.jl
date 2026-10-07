@@ -1,8 +1,12 @@
+include("utils/metrics.jl")
+
 using Flux
 using Flux.Optimisers
 using Flux.Losses
 using MLUtils
 using ProgressMeter
+
+using .MLMetrics
 
 # TODO: Add some parameters as args so this is more flexible
 function new_model()
@@ -15,13 +19,12 @@ end
 probs(model, data) = model(data) |> softmax
 predict(probs) = probs |> eachcol .|> argmax .|> x -> x - 1
 
-struct ModelTrainer{M, S}
-    model::M 
-    opt_state::S 
+struct ModelTrainer{M,S}
+    model::M
+    opt_state::S
 end
 ModelTrainer(model::Flux.Chain, opt::Optimisers.AbstractRule) = ModelTrainer(model, Flux.setup(opt, model))
 model(trainer::ModelTrainer)::Flux.Chain = trainer.model
-
 
 function update!(trainer, x, y)
     loss, grads = Flux.withgradient(trainer.model) do m
@@ -39,4 +42,12 @@ function train!(trainer, dataloader, epochs)
             push!(losses, loss)
         end
     end
+end
+
+function validate(model, x, y; metrics::Dict{Symbol, Function} = MLMetrics.DEFAULT_METRICS)
+    y_pred = model(x) |> softmax |> predict
+    conf_mat = MLMetrics.confusion_matrix(y_pred, y)
+
+    Dict( metric => fn(conf_mat) for (metric, fn) = metrics)
+
 end
