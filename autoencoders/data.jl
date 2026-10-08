@@ -1,3 +1,4 @@
+module Data
 
 using Plots
 
@@ -38,4 +39,4 @@ function plot_data(features, classes)
         ylims=(0, 1))
 end
 
-
+end

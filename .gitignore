@@ -2,7 +2,7 @@
 .vscode/
 data/
 output/
-models/
+saved_models/
 .DS_Store
 
 # Byte-compiled / optimized / DLL files

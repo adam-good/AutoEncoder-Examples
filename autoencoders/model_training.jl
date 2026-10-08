@@ -1,29 +1,22 @@
+module ModelTraining
+
 include("utils/metrics.jl")
+include("utils/model_utils.jl")
 
 using Flux
 using Flux.Optimisers
 using Flux.Losses
-using MLUtils
 using ProgressMeter
 
 using .MLMetrics
+using .ModelUtils: predict
 
-# TODO: Add some parameters as args so this is more flexible
-function new_model()
-    Chain(
-        Dense(2 => 3, tanh),
-        BatchNorm(3),
-        Dense(3 => 2)
-    )
-end
-probs(model, data) = model(data) |> softmax
-predict(probs) = probs |> eachcol .|> argmax .|> x -> x - 1
-
+const DEFAULT_OPT = Optimisers.Adam(0.01)
 struct ModelTrainer{M,S}
     model::M
     opt_state::S
 end
-ModelTrainer(model::Flux.Chain, opt::Optimisers.AbstractRule) = ModelTrainer(model, Flux.setup(opt, model))
+ModelTrainer(model::Flux.Chain, opt::Optimisers.AbstractRule = DEFAULT_OPT) = ModelTrainer(model, Flux.setup(opt, model))
 model(trainer::ModelTrainer)::Flux.Chain = trainer.model
 
 function update!(trainer, x, y)
@@ -49,5 +42,7 @@ function validate(model, x, y; metrics::Dict{Symbol, Function} = MLMetrics.DEFAU
     conf_mat = MLMetrics.confusion_matrix(y_pred, y)
 
     Dict( metric => fn(conf_mat) for (metric, fn) = metrics)
+
+end
 
 end
