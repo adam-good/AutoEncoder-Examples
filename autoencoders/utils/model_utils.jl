@@ -1,8 +1,11 @@
-module ModelUtils 
-    using Flux
+module ModelUtils
+using Flux
 
-    export probabilities, predict
+export probabilities, predict
 
-    probabilities(model::Flux.Chain, data) = model(data) |> softmax
-    predict(probabilities) = probabilities |> eachcol .|> argmax 
+probabilities(model::Flux.Chain, data) = model(data) |> softmax
+predict(probabilities, classes) = probabilities |>
+    eachcol .|>
+    argmax .|>
+    idx -> classes[idx]
 end
