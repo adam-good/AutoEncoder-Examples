@@ -1,6 +1,6 @@
 #  My Environment
 .vscode/
-data/
+data_cache/
 output/
 saved_models/
 .DS_Store
