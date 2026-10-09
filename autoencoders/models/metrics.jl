@@ -1,4 +1,4 @@
-module MLMetrics
+module Metrics
 
 # TODO: generalize
 struct ConfusionMatrix

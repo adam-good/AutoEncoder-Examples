@@ -1,22 +1,20 @@
 module ModelTraining
 
-include("utils/metrics.jl")
-include("utils/model_utils.jl")
+include("models/models.jl")
 
 using Flux
 using Flux.Optimisers
 using Flux.Losses
 using ProgressMeter
 
-using .MLMetrics
-using .ModelUtils: predict
+using .Models
 
 const DEFAULT_OPT = Optimisers.Adam(0.01)
 struct ModelTrainer{M,S}
     model::M
     opt_state::S
 end
-ModelTrainer(model::Flux.Chain, opt::Optimisers.AbstractRule = DEFAULT_OPT) = ModelTrainer(model, Flux.setup(opt, model))
+ModelTrainer(model::Flux.Chain, opt::Optimisers.AbstractRule=DEFAULT_OPT) = ModelTrainer(model, Flux.setup(opt, model))
 model(trainer::ModelTrainer)::Flux.Chain = trainer.model
 
 function update!(trainer, x, y)
@@ -37,11 +35,11 @@ function train!(trainer, dataloader, epochs)
     end
 end
 
-function validate(model, x, y; metrics::Dict{Symbol, Function} = MLMetrics.DEFAULT_METRICS)
+function validate(model, x, y; metrics::Dict{Symbol,Function}=MLMetrics.DEFAULT_METRICS)
     y_pred = model(x) |> softmax |> predict
     conf_mat = MLMetrics.confusion_matrix(y_pred, y)
 
-    Dict( metric => fn(conf_mat) for (metric, fn) = metrics)
+    Dict(metric => fn(conf_mat) for (metric, fn) = metrics)
 
 end
 

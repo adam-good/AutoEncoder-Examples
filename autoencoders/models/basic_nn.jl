@@ -1,4 +1,3 @@
-module Models
 
 using Flux
 
@@ -11,4 +10,3 @@ function new_basic_nn()
     )
 end
 
-end
