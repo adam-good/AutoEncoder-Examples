@@ -14,8 +14,4 @@ pkgs.mkShellNoCC {
 #        julia-bin
 #        qt5.qtbase
     ];
-
-    shellHook = ''
-        export JULIA_DEPOT_PATH=./juliapkgs
-    '';
 }
