@@ -7,7 +7,10 @@ include("metrics.jl")
 
 using .Metrics
 
-probabilities(model::Flux.Chain, data) = model(data) |> softmax
+abstract type Model <: Flux.Chain end
+new()::Model = error("new()::Model must be implemented for each subtype")
+
+probabilities(model::Model, data) = model(data) |> softmax
 predict(probabilities, classes) = begin
     probabilities |>
     eachcol .|>

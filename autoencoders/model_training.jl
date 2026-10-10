@@ -8,14 +8,16 @@ using Flux.Losses
 using ProgressMeter
 
 using .Models
+using .Models: Model
+using .Models.BasicNN
 
 const DEFAULT_OPT = Optimisers.Adam(0.01)
 struct ModelTrainer{M,S}
     model::M
     opt_state::S
 end
-ModelTrainer(model::Flux.Chain, opt::Optimisers.AbstractRule=DEFAULT_OPT) = ModelTrainer(model, Flux.setup(opt, model))
-model(trainer::ModelTrainer)::Flux.Chain = trainer.model
+ModelTrainer(model::Model, opt::Optimisers.AbstractRule=DEFAULT_OPT) = ModelTrainer(model, Flux.setup(opt, model))
+model(trainer::ModelTrainer)::Model = trainer.model
 
 function update!(trainer, x, y)
     loss, grads = Flux.withgradient(trainer.model) do m
