@@ -1,21 +1,11 @@
+module DataUtils
+
 using Flux
 using Plots
 
-struct DatasetMetadata
-    Name::String
-    feature_types::Vector{Type}
-    classes::Vector{Symbol}
-end
+include("datasets.jl")
 
-abstract type DataSample end
-length(::DataSample) = error("DataSample Subtypes Must Implement length()")
-features(::DataSample) = error("DataSample Subtypes Must Implement features()")
-classes(::DataSample) = error("DataSample Subtypes Must Implement classes()")
-#ith_feature(i::Integer, x::DataSample) = eachcol(x.features)[i]
-#ith_class(i::Integer, x::DataSample) = x.classes[i]
-
-abstract type Dataset end
-sample(::Dataset, ::Any)::DataSample = error("Dataset Subtypes Must Implement sample()")
+using .Datasets: DataSample
 
 function dataloader(data::DataSample)
     Flux.DataLoader(
@@ -24,10 +14,12 @@ function dataloader(data::DataSample)
     )
 end
 
-function plot_data(features, classes)
+function plot_data(features, classes::Vector{Number})
     x, y = eachrow(features)
     scatter(x, y, marker_z=classes,
         color=get(cgrad(:heat), classes),
         xlims=(0, 1),
         ylims=(0, 1))
+end
+
 end
