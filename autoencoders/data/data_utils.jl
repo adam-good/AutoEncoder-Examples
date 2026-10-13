@@ -7,7 +7,9 @@ include("datasets.jl")
 
 using .Datasets: DataSample
 
-function dataloader(data::DataSample)
+export new_dataloader, plot_data
+
+function new_dataloader(data::DataSample)::Flux.DataLoader
     Flux.DataLoader(
         (data.features, Flux.onehotbatch(data.classes, XOR_CLASSES)),
         batchsize=64, shuffle=true

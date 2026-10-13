@@ -2,7 +2,7 @@ module Xor
 
 using ..Datasets: Dataset, DatasetMetadata, DataSample
 
-export length, features, classes, sample
+export length, features, classes, sample, XorDataset
 
 xor2d(x::Number, y::Number)::Bool = xor(x > 0.5, y > 0.5)
 const XOR_CLASS_SYMBOLS = [:False, :True]
@@ -17,7 +17,7 @@ const CLASS_MAP = Dict( #TODO: This is kinda sloppy. Fix
 struct XorDataset <: Dataset
     metadata::DatasetMetadata
 end
-new()::XorDataset = XorDataset(
+XorDataset()::XorDataset = XorDataset(
     DatasetMetadata("XOR", [Float32, Float32], XOR_CLASS_SYMBOLS),
 )
 

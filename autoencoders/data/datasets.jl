@@ -1,5 +1,7 @@
 module Datasets
 
+export length, features, classes, sample
+
 struct DatasetMetadata
     Name::String
     feature_types::Vector{Type}
@@ -17,5 +19,6 @@ abstract type Dataset end
 sample(::Dataset, ::Any)::DataSample = error("Dataset Subtypes Must Implement sample()")
 
 include("datasets/xor.jl")
+include("datasets/sinusoid.jl")
 
 end
