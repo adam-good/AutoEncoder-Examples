@@ -5,7 +5,7 @@ export length, features, classes, sample
 struct DatasetMetadata
     Name::String
     feature_types::Vector{Type}
-    classes::Vector{Symbol}
+    classes::Set{Symbol}
 end
 
 abstract type DataSample end
@@ -16,6 +16,7 @@ classes(::DataSample) = error("DataSample Subtypes Must Implement classes()")
 #ith_class(i::Integer, x::DataSample) = x.classes[i]
 
 abstract type Dataset end
+function sample end
 sample(::Dataset, ::Any)::DataSample = error("Dataset Subtypes Must Implement sample()")
 
 include("datasets/xor.jl")

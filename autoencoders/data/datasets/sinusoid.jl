@@ -1,7 +1,3 @@
-module Sinusoid
-
-using ..Datasets: Dataset, DatasetMetadata, DataSample
-
 sinusoid(A::Number, ω::Number, ϕ::Number, t::Number) = A*sin(ω*t + ϕ)
 
 struct SinusoidDataset <: Dataset
@@ -10,12 +6,13 @@ struct SinusoidDataset <: Dataset
     ang_freq::Number
     phase::Number
 end
-SinusoidDataset()::SinusoidDataset = SinusoidDataset(
-    DatasetMetadata("Sinusoid", [Float32], nothing)
+SinusoidDataset(amplitude, angular_freq, phase)::SinusoidDataset = SinusoidDataset(
+DatasetMetadata("Sinusoid", [Float32], Set()),
+    amplitude, angular_freq, phase
 )
 
 struct SinusoidDataSample <: DataSample
-    N::Integer,
+    N::Integer
     features::Matrix{Float32}
     responses::Vector{Float32}
 end
@@ -31,4 +28,3 @@ function sample(D::SinusoidDataset, N::Integer=1000)::SinusoidDataSample
     )
 end
 
-end

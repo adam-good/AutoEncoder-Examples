@@ -16,10 +16,10 @@ function new_dataloader(data::DataSample)::Flux.DataLoader
     )
 end
 
-function plot_data(features, classes::Vector{Number})
+function plot_data(features, z)
     x, y = eachrow(features)
-    scatter(x, y, marker_z=classes,
-        color=get(cgrad(:heat), classes),
+    scatter(x, y, marker_z=z,
+        color=get(cgrad(:heat), z),
         xlims=(0, 1),
         ylims=(0, 1))
 end

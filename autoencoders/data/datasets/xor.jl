@@ -1,11 +1,5 @@
-module Xor
-
-using ..Datasets: Dataset, DatasetMetadata, DataSample
-
-export length, features, classes, sample, XorDataset
-
 xor2d(x::Number, y::Number)::Bool = xor(x > 0.5, y > 0.5)
-const XOR_CLASS_SYMBOLS = [:False, :True]
+const XOR_CLASS_SYMBOLS = Set([:False, :True])
 const XOR_CLASS_VALUES =  [false, true]
 const CLASS_MAP = Dict( #TODO: This is kinda sloppy. Fix
     true => :True, 
@@ -38,6 +32,4 @@ function sample(::XorDataset, N::Integer=1000)::XorDatasample
         [CLASS_MAP[xor2d(col[1], col[2])]
          for col in eachcol(data)]
     )
-end
-
 end
