@@ -1,3 +1,6 @@
+
+using Plots
+
 xor2d(x::Number, y::Number)::Bool = xor(x > 0.5, y > 0.5)
 const XOR_CLASS_SYMBOLS = Set([:False, :True])
 const XOR_CLASS_VALUES = [false, true]
@@ -32,4 +35,14 @@ function sample(::XorDataset, N::Integer=1000)::XorDatasample
         [CLASS_MAP[xor2d(col[1], col[2])]
          for col in eachcol(data)]
     )
+end
+
+export plot_data
+function plot_data(data::XorDatasample, z=nothing)
+    color = z === nothing ? nothing : get(cgrad(:heat), z)
+    x, y = eachrow(features(data))
+    scatter(x, y, marker_z=z,
+        color=color,
+        xlims=(0, 1),
+        ylims=(0, 1))
 end

@@ -1,6 +1,6 @@
 module Datasets
 
-export length, features, targets, sample
+export length, features, targets, sample, plot_data
 
 struct DatasetMetadata
     Name::String
@@ -12,8 +12,7 @@ abstract type DataSample end
 length(::DataSample) = error("DataSample Subtypes Must Implement length()")
 features(::DataSample) = error("DataSample Subtypes Must Implement features()")
 targets(::DataSample) = error("DataSample Subtypes Must Implement targets()")
-#ith_feature(i::Integer, x::DataSample) = eachcol(x.features)[i]
-#ith_class(i::Integer, x::DataSample) = x.classes[i]
+plot_data(::DataSample;) = error("DataSample Subtypes Must Implement plot_data")
 
 abstract type Dataset end
 function sample end
