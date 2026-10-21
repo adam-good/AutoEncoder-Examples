@@ -7,18 +7,18 @@ struct SinusoidDataset <: Dataset
     phase::Number
 end
 SinusoidDataset(amplitude, angular_freq, phase)::SinusoidDataset = SinusoidDataset(
-DatasetMetadata("Sinusoid", [Float32], Set()),
+DatasetMetadata("Sinusoid", [Float32], [Float32]),
     amplitude, angular_freq, phase
 )
 
 struct SinusoidDataSample <: DataSample
     N::Integer
     features::Matrix{Float32}
-    responses::Vector{Float32}
+    targets::Vector{Float32}
 end
 length(x::SinusoidDataSample)::Integer = x.N
 features(x::SinusoidDataSample)::Matrix{Float32} = x.features
-responses(x::SinusoidDataSample)::Vector{Float32} = x.responses
+targets(x::SinusoidDataSample)::Vector{Float32} = x.targets
 
 function sample(D::SinusoidDataset, N::Integer=1000)::SinusoidDataSample
     data = rand(Float32, N)

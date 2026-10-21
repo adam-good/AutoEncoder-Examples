@@ -1,8 +1,8 @@
 xor2d(x::Number, y::Number)::Bool = xor(x > 0.5, y > 0.5)
 const XOR_CLASS_SYMBOLS = Set([:False, :True])
-const XOR_CLASS_VALUES =  [false, true]
+const XOR_CLASS_VALUES = [false, true]
 const CLASS_MAP = Dict( #TODO: This is kinda sloppy. Fix
-    true => :True, 
+    true => :True,
     false => :False,
     :True => true,
     :False => false
@@ -12,18 +12,18 @@ struct XorDataset <: Dataset
     metadata::DatasetMetadata
 end
 XorDataset()::XorDataset = XorDataset(
-    DatasetMetadata("XOR", [Float32, Float32], XOR_CLASS_SYMBOLS),
+    DatasetMetadata("XOR", [Float32, Float32], [Symbol]),
 )
 
 struct XorDatasample <: DataSample
     N::Integer
     features::Matrix{Float32}
-    classes::Vector{Symbol}
+    targets::Vector{Symbol}
 end
 length(x::XorDatasample)::Integer = x.N
 features(x::XorDatasample)::Matrix{Float32} = x.features
-classes(x::XorDatasample)::Vector{Symbol} = x.classes
-classes(x::XorDatasample)::Vector{Bool} = map(s -> CLASS_MAP[s], x.classes)
+targets(x::XorDatasample)::Vector{Symbol} = x.targets
+targets(x::XorDatasample)::Vector{Bool} = map(s -> CLASS_MAP[s], x.targets)
 
 function sample(::XorDataset, N::Integer=1000)::XorDatasample
     data = rand(Float32, 2, N)

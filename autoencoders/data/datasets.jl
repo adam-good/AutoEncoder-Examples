@@ -1,17 +1,17 @@
 module Datasets
 
-export length, features, classes, sample
+export length, features, targets, sample
 
 struct DatasetMetadata
     Name::String
     feature_types::Vector{Type}
-    classes::Set{Symbol}
+    target_types::Vector{Type}
 end
 
 abstract type DataSample end
 length(::DataSample) = error("DataSample Subtypes Must Implement length()")
 features(::DataSample) = error("DataSample Subtypes Must Implement features()")
-classes(::DataSample) = error("DataSample Subtypes Must Implement classes()")
+targets(::DataSample) = error("DataSample Subtypes Must Implement targets()")
 #ith_feature(i::Integer, x::DataSample) = eachcol(x.features)[i]
 #ith_class(i::Integer, x::DataSample) = x.classes[i]
 
