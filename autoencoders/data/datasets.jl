@@ -12,7 +12,7 @@ abstract type DataSample end
 length(::DataSample) = error("DataSample Subtypes Must Implement length()")
 features(::DataSample) = error("DataSample Subtypes Must Implement features()")
 targets(::DataSample) = error("DataSample Subtypes Must Implement targets()")
-plot_data(::DataSample;) = error("DataSample Subtypes Must Implement plot_data")
+plot_data(::DataSample) = error("DataSample Subtypes Must Implement plot_data")
 
 abstract type Dataset end
 function sample end

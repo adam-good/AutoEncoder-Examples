@@ -13,18 +13,23 @@ DatasetMetadata("Sinusoid", [Float32], [Float32]),
 
 struct SinusoidDataSample <: DataSample
     N::Integer
-    features::Matrix{Float32}
+    features::Vector{Float32}
     targets::Vector{Float32}
 end
 length(x::SinusoidDataSample)::Integer = x.N
-features(x::SinusoidDataSample)::Matrix{Float32} = x.features
+features(x::SinusoidDataSample)::Vector{Float32} = x.features
 targets(x::SinusoidDataSample)::Vector{Float32} = x.targets
 
 function sample(D::SinusoidDataset, N::Integer=1000)::SinusoidDataSample
-    data = rand(Float32, N)
+    data = rand(Float32, N) .* 2π
     SinusoidDataSample(
         N, data,
         map(t -> sinusoid(D.amplitude, D.ang_freq, D.phase, t), data)
     )
 end
 
+export plot_data
+function plot_data(data::SinusoidDataSample)
+    x,y = features(data), targets(data)
+    scatter(x,y, xlims=(0,2π))
+end
