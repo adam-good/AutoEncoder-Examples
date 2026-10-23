@@ -1,5 +1,6 @@
 
 using Plots
+using Flux
 
 xor2d(x::Number, y::Number)::Bool = xor(x > 0.5, y > 0.5)
 const XOR_CLASS_SYMBOLS = Set([:False, :True])
@@ -37,7 +38,13 @@ function sample(::XorDataset, N::Integer=1000)::XorDatasample
     )
 end
 
-export plot_data
+function DataLoader(data::XorDatasample)::Flux.DataLoader
+    Flux.DataLoader(
+        (data.features, Flux.onehotbatch(data.targets, XOR_CLASS_SYMBOLS)),
+        batchsize=64, shuffle=true
+    )
+end
+
 function plot_data(data::XorDatasample, z=nothing)
     color = z === nothing ? nothing : get(cgrad(:heat), z)
     x, y = eachrow(features(data))

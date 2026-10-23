@@ -8,7 +8,6 @@ struct BasicNN <: Model
     out_size::Int
     inner::Flux.Chain
 end
-
 function BasicNN(n_features::Int, hidden_sizes::Vector{Int}, n_targets::Int)::BasicNN
     layers = Vector{Any}()
     push!(layers, Dense(n_features => hidden_sizes[1], relu))
@@ -21,8 +20,9 @@ function BasicNN(n_features::Int, hidden_sizes::Vector{Int}, n_targets::Int)::Ba
 
     BasicNN(n_targets, hidden_sizes, n_targets, model)
 end
+BasicNN(n_features::Int, n_targets::Int)::BasicNN = BasicNN(n_features, [n_features+n_targets], n_targets) 
 get_trainable(m::BasicNN) = m.inner
-(nn::BasicNN)(x::AbstractVector) = nn.inner(x)
+(nn::BasicNN)(x::AbstractMatrix) = nn.inner(x)
 
 function update!(network::Flux.Chain, opt_state, x, y)
     loss, grads = Flux.withgradient(network) do m 

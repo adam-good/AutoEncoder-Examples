@@ -1,6 +1,6 @@
 module Datasets
 
-export length, features, targets, sample, plot_data
+export length, features, targets, sample, plot_data, DataLoader
 
 struct DatasetMetadata
     Name::String

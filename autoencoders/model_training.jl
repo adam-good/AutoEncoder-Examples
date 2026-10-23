@@ -1,26 +1,24 @@
 module ModelTraining
 
-export ModelTrainer
-
-include("models/models.jl")
+export ModelTrainer, train!
 
 using Flux
 using Flux.Optimisers
 using Flux.Losses
 using ProgressMeter
 
-using .Models
+using ..Models
 
 const DEFAULT_OPT = Optimisers.Adam(0.01)
 struct ModelTrainer
-    model::Flux.Chain # TODO: This should be abstracted eventually
-    opt_state
+    model::Flux.Chain   # TODO: Generalize
+    opt_state           # TODO: Figure out a type for this
 end
 ModelTrainer(model::Model, opt::Optimisers.AbstractRule=DEFAULT_OPT) = ModelTrainer(
     model.inner,
     Flux.setup(opt, model.inner) # TODO: This won't work if we expand past Flux
 )
-model(trainer::ModelTrainer)::Model = trainer.model
+model(trainer::ModelTrainer)::Flux.Chain = trainer.model
 
 function update!(trainer, x, y)
     loss, grads = Flux.withgradient(trainer.model) do m
