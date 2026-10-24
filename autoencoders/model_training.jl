@@ -28,14 +28,23 @@ function update!(trainer, x, y)
     loss
 end
 
-function train!(trainer, dataloader, epochs)
+function train!(trainer, dataloader, epochs; callbacks=Dict())
     losses = []
+    cbs = []
     @showprogress for _ in 1:epochs
-        for (x, y) in dataloader
+        counter = 0
+        batch_loss = 0
+        for (x,y) in dataloader
             loss = update!(trainer, x, y)
-            push!(losses, loss)
+            batch_loss += loss
+            counter += 1
         end
+        batch_loss /= counter
+        cb = Dict(key => fn() for (key,fn) in callbacks)
+        push!(losses, batch_loss)
+        push!(cbs, cb)
     end
+    losses, cbs
 end
 
 function validate(model, x, y; metrics::Dict{Symbol,Function}=MLMetrics.DEFAULT_METRICS)

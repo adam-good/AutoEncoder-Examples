@@ -36,10 +36,15 @@ update!(model::BasicNN, opt_state, x, y) = update!(get_trainable(model), opt_sta
 function train!(network::Flux.Chain, opt_state, dataloader, epochs)
     losses = []
     @showprogress for _ in 1:epochs
+        counter = 0
+        batch_loss = 0
         for (x,y) in dataloader
             loss = update!(network, opt_state, x, y)
-            push!(losses, loss)
+            batch_loss += loss
+            counter += 1
         end
+        batch_loss /= counter
+        push!(losses, batch_loss)
     end
     losses
 end
