@@ -23,6 +23,7 @@ end
 BasicNN(n_features::Int, n_targets::Int)::BasicNN = BasicNN(n_features, [n_features+n_targets], n_targets) 
 get_trainable(m::BasicNN) = m.inner
 (nn::BasicNN)(x::AbstractMatrix) = nn.inner(x)
+(nn::BasicNN)(x::AbstractVector) = nn.inner(x)
 
 function update!(network::Flux.Chain, opt_state, x, y)
     loss, grads = Flux.withgradient(network) do m 

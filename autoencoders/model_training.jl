@@ -1,6 +1,6 @@
 module ModelTraining
 
-export ModelTrainer, train!
+export ModelTrainer, train!, validate
 
 using Flux
 using Flux.Optimisers
@@ -47,7 +47,7 @@ function train!(trainer, dataloader, epochs; callbacks=Dict())
     losses, cbs
 end
 
-function validate(model, x, y; metrics::Dict{Symbol,Function}=MLMetrics.DEFAULT_METRICS)
+function validate(model, x, y; metrics::Dict{Symbol,Function}=Metrics.DEFAULT_METRICS)
     y_pred = model(x) |> softmax |> predict
     conf_mat = MLMetrics.confusion_matrix(y_pred, y)
 
